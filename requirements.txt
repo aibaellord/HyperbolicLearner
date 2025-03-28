@@ -1,0 +1,89 @@
+# Core Dependencies
+numpy>=1.22.0
+scipy>=1.8.0
+pandas>=1.4.0
+matplotlib>=3.5.0
+tqdm>=4.62.0
+
+# Video Processing
+opencv-python>=4.5.5
+pytube>=12.0.0
+moviepy>=1.0.3
+ffmpeg-python>=0.2.0
+pydub>=0.25.1
+librosa>=0.9.1
+
+# Machine Learning
+torch>=1.10.0
+torchvision>=0.11.0
+tensorflow>=2.8.0
+keras>=2.8.0
+scikit-learn>=1.0.2
+transformers>=4.16.0
+nltk>=3.7.0
+spacy>=3.2.0
+gensim>=4.1.2
+
+# Computer Vision and Image Processing
+pillow>=9.0.0
+imageio>=2.16.0
+scikit-image>=0.19.1
+mediapipe>=0.8.9
+face-recognition>=1.3.0
+dlib>=19.23.0
+
+# UI Automation
+pyautogui>=0.9.53
+pynput>=1.7.6
+python-xlib>=0.31; platform_system=="Linux"
+pygetwindow>=0.0.9
+pywinauto>=0.6.8; platform_system=="Windows"
+pyobjc>=8.0; platform_system=="Darwin"
+
+# Knowledge Graph and Database
+networkx>=2.7.0
+neo4j>=4.4.0
+rdflib>=6.1.1
+pyvis>=0.1.9
+graphviz>=0.19.1
+sqlalchemy>=1.4.31
+pymongo>=4.0.1
+
+# Web Crawling and Scraping
+requests>=2.27.1
+beautifulsoup4>=4.10.0
+selenium>=4.1.0
+playwright>=1.19.0
+webdriver-manager>=3.5.2
+
+# Natural Language Processing
+textblob>=0.17.1
+sumy>=0.9.0
+bert-extractive-summarizer>=0.10.0
+sentence-transformers>=2.2.0
+keybert>=0.5.0
+
+# Audio Processing
+speechrecognition>=3.8.1
+whisper>=1.0.0
+vosk>=0.3.42
+
+# Utilities
+click>=8.0.3
+python-dotenv>=0.19.2
+pyyaml>=6.0
+joblib>=1.1.0
+cachetools>=5.0.0
+psutil>=5.9.0
+humanize>=4.0.0
+colorama>=0.4.4
+rich>=12.0.0
+
+# Development and Testing
+pytest>=7.0.0
+black>=22.1.0
+flake8>=4.0.1
+mypy>=0.931
+isort>=5.10.1
+pre-commit>=2.17.0
+
