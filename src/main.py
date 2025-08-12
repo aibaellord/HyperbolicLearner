@@ -1,3 +1,13 @@
+# --- Creative AI Suggestions Dashboard Launcher ---
+def launch_creative_ai_dashboard():
+    """Launch the Creative AI Suggestions dashboard in the default browser."""
+    import webbrowser
+    import threading
+    def _open():
+        time.sleep(1)
+        webbrowser.open('http://127.0.0.1:5000/creative-ai')
+    threading.Thread(target=_open, daemon=True).start()
+
 #!/usr/bin/env python3
 """
 HyperbolicLearner - Unified System Entry Point
@@ -727,9 +737,13 @@ def main():
     query_parser.add_argument("--max-results", type=int, default=10, help="Maximum number of results")
     query_parser.add_argument("--simple", action="store_true", help="Simple output format")
     
+
     # Stats command
     subparsers.add_parser("stats", help="Show system statistics")
-    
+
+    # Creative AI Suggestions Dashboard command
+    subparsers.add_parser("creative-ai", help="Launch the Creative AI Suggestions dashboard (new creative features)")
+
     # Config command
     config_parser = subparsers.add_parser("config", help="Manage configuration")
     config_parser.add_argument("--save", metavar="PATH", help="Save configuration to PATH")
@@ -741,6 +755,12 @@ def main():
     app = HyperbolicLearner()
     
     # Execute the requested command
+    if args.command == "creative-ai":
+        print("Launching Creative AI Suggestions dashboard...")
+        launch_creative_ai_dashboard()
+        from src.ui.web_interface import app as flask_app
+        flask_app.run(debug=True, port=5000)
+        sys.exit(0)
     if args.command == "learn":
         is_url = args.url.startswith("http://") or args.url.startswith("https://")
         

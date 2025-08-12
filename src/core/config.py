@@ -49,87 +49,6 @@ class EnvironmentType(Enum):
 
 class ResourceType(Enum):
     """Types of resources that can be detected"""
-    CPU = auto()
-    GPU = auto()
-    RAM = auto()
-    DISK = auto()
-    NETWORK = auto()
-
-
-@dataclass
-class CPUInfo:
-    """CPU resource information"""
-    cores: int = 0
-    logical_processors: int = 0
-    architecture: str = ""
-    model_name: str = ""
-    frequency_mhz: float = 0.0
-    
-    @classmethod
-    def detect(cls) -> 'CPUInfo':
-        """Detect CPU information"""
-        info = cls()
-        info.logical_processors = multiprocessing.cpu_count()
-        
-        try:
-            # Platform-specific detection
-            if platform.system() == "Linux":
-                import subprocess
-                # Get physical cores (excluding hyperthreading)
-                cmd = "lscpu | grep 'Core(s) per socket' | awk '{print $4}'"
-                physical_cores = subprocess.check_output(cmd, shell=True).decode().strip()
-                info.cores = int(physical_cores) if physical_cores.isdigit() else info.logical_processors
-                
-                # Get CPU model
-                cmd = "lscpu | grep 'Model name' | cut -d':' -f2- | sed 's/^[ \t]*//'"
-                info.model_name = subprocess.check_output(cmd, shell=True).decode().strip()
-                
-                # Get CPU frequency
-                cmd = "lscpu | grep 'CPU MHz' | awk '{print $3}'"
-                freq = subprocess.check_output(cmd, shell=True).decode().strip()
-                info.frequency_mhz = float(freq) if freq else 0.0
-            
-            elif platform.system() == "Darwin":  # macOS
-                import subprocess
-                # Get physical cores
-                cmd = "sysctl -n hw.physicalcpu"
-                info.cores = int(subprocess.check_output(cmd, shell=True).decode().strip())
-                
-                # Get CPU model
-                cmd = "sysctl -n machdep.cpu.brand_string"
-                info.model_name = subprocess.check_output(cmd, shell=True).decode().strip()
-                
-                # Get CPU frequency
-                cmd = "sysctl -n hw.cpufrequency"
-                freq = subprocess.check_output(cmd, shell=True).decode().strip()
-                info.frequency_mhz = float(freq) / 1000000 if freq.isdigit() else 0.0
-            
-            elif platform.system() == "Windows":
-                import subprocess
-                # Get CPU info from wmic
-                cmd = "wmic cpu get NumberOfCores,NumberOfLogicalProcessors,Name,MaxClockSpeed /value"
-                output = subprocess.check_output(cmd, shell=True).decode()
-                
-                # Parse output
-                for line in output.splitlines():
-                    if "=" in line:
-                        key, value = line.split("=", 1)
-                        key = key.strip()
-                        value = value.strip()
-                        
-                        if key == "NumberOfCores":
-                            info.cores = int(value) if value.isdigit() else 0
-                        elif key == "Name":
-                            info.model_name = value
-                        elif key == "MaxClockSpeed":
-                            info.frequency_mhz = float(value) if value.isdigit() else 0.0
-            
-            info.architecture = platform.machine() or platform.architecture()[0]
-        
-        except Exception as e:
-            logger.warning(f"Error detecting CPU information: {e}")
-        
-        return info
 
 
 @dataclass
@@ -351,12 +270,10 @@ class DiskInfo:
                     cmd = f"df -k '{abs_path}' | tail -1 | awk '{{print $2, $4}}'"
                     output = subprocess.check_output(cmd, shell=True).decode().strip()
                     parts = output.split()
-                    
                     if len(parts) >= 2:
                         # Convert KB to GB
                         info.total_gb = int(parts[0]) / (1024 * 1024)
                         info.available_gb = int(parts[1]) / (1024 * 1024)
-                
                 elif platform.system() == "Windows":
                     import subprocess
                     import os
@@ -366,9 +283,11 @@ class DiskInfo:
                         # Get disk space from wmic
                         cmd = f"wmic logicaldisk where DeviceID='{drive}' get Size,FreeSpace /value"
                         output = subprocess.check_output(cmd, shell=True).decode()
-                        
                         # Parse output
                         size = None
                         free = None
-                        for line
+                        # for line in output.splitlines():
+                        #     pass  # TODO: Implement disk space parsing for Windows
+            except Exception as e:
+                logger.warning(f"Disk space detection failed: {e}")
 

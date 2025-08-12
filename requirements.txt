@@ -68,6 +68,14 @@ speechrecognition>=3.8.1
 whisper>=1.0.0
 vosk>=0.3.42
 
+# Workflow Automation and N8N Integration
+requests>=2.27.1
+aiohttp>=3.8.0
+fastapi>=0.75.0
+uvicorn>=0.17.0
+websockets>=10.2
+pydantic>=1.9.0
+
 # Utilities
 click>=8.0.3
 python-dotenv>=0.19.2
