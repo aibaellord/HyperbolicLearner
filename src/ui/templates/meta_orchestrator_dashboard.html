@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MetaOrchestrator Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #181a1b 0%, #23272b 100%); color: #f8f9fa; }
+        .container { margin-top: 40px; max-width: 800px; }
+        .card { background: #23272b; border: none; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); }
+        .dashboard-title { font-size: 2.1em; font-weight: 700; margin-bottom: 18px; }
+        .goal-list li { margin-bottom: 6px; }
+        .evolution-log { background: #181a1b; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 1.05em; }
+        .agent-status { background: #1a2a1b; border-radius: 8px; padding: 12px; margin-top: 12px; }
+        .btn-activate { background: linear-gradient(90deg, #00c6ff 0%, #007bff 100%); border: none; font-weight: 600; }
+        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-dot.active { background: #00e676; }
+        .status-dot.inactive { background: #ff1744; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card shadow-lg p-4">
+        <div class="dashboard-title"><i class="fa-solid fa-brain"></i> MetaOrchestrator Dashboard</div>
+    <button id="activateBtn" class="btn btn-activate mb-3"><i class="fa-solid fa-play"></i> Activate MetaOrchestrator</button>
+    <button id="evolveBtn" class="btn btn-outline-warning mb-3 ms-2"><i class="fa-solid fa-bolt"></i> Manual Evolution</button>
+        <div id="statusMsg" class="mb-3"></div>
+        <h5>Current Goals <button id="addGoalBtn" class="btn btn-sm btn-outline-info ms-2"><i class="fa-solid fa-plus"></i> Add</button></h5>
+        <ul id="goalList" class="goal-list"></ul>
+        <div id="goalEditBox" style="display:none; margin-bottom:12px;">
+            <input id="goalInput" class="form-control mb-2" placeholder="New goal (e.g. maximize monetization)">
+            <input id="domainInput" class="form-control mb-2" placeholder="Domain (e.g. monetization, realism, compliance)" value="core">
+            <input id="priorityInput" class="form-control mb-2" type="number" min="1" max="10" value="5" placeholder="Priority (1-10)">
+            <button id="saveGoalBtn" class="btn btn-success btn-sm"><i class="fa-solid fa-check"></i> Save</button>
+            <button id="cancelGoalBtn" class="btn btn-secondary btn-sm ms-2">Cancel</button>
+        </div>
+        <h5>Agent Status</h5>
+        <div id="agentStatus" class="agent-status"></div>
+        <h5>Evolution Log</h5>
+        <div id="evolutionLog" class="evolution-log"></div>
+    </div>
+</div>
+<script>
+    async function fetchAnalytics() {
+        const res = await fetch('/api/meta/analytics');
+        const data = await res.json();
+        // Goals
+        const goalList = document.getElementById('goalList');
+        goalList.innerHTML = '';
+        (data.goals || []).forEach((g, idx) => {
+            if (typeof g === 'object') {
+                goalList.innerHTML += `<li><b>${g.goal}</b> <span class='badge bg-info'>${g.domain}</span> <span class='badge bg-secondary'>P${g.priority}</span> <button class='btn btn-xs btn-outline-danger ms-2' onclick='window.deleteGoal(${idx})'><i class='fa-solid fa-trash'></i></button></li>`;
+            } else {
+                goalList.innerHTML += `<li>${g}</li>`;
+            }
+        });
+        // Agent status
+        const agentStatus = document.getElementById('agentStatus');
+        agentStatus.innerHTML = '';
+        (data.agent_status || []).forEach(domain => {
+            agentStatus.innerHTML += `<span class='status-dot active'></span> <b>${domain}</b> `;
+        });
+        // Evolution log
+        const evolutionLog = document.getElementById('evolutionLog');
+        evolutionLog.innerHTML = '';
+        (data.evolution_history || []).forEach(ev => {
+            evolutionLog.innerHTML += `<div><code>${JSON.stringify(ev)}</code></div>`;
+        });
+    }
+    document.getElementById('activateBtn').onclick = async function() {
+    document.getElementById('evolveBtn').onclick = async function() {
+        const res = await fetch('/api/meta/evolve', {method:'POST'});
+        const data = await res.json();
+        document.getElementById('statusMsg').innerHTML = `<span class='badge bg-warning text-dark'>${data.status || data.error}</span>`;
+        setTimeout(() => { document.getElementById('statusMsg').innerHTML = ''; }, 3000);
+        fetchAnalytics();
+    };
+    document.getElementById('addGoalBtn').onclick = function() {
+        document.getElementById('goalEditBox').style.display = 'block';
+    };
+    document.getElementById('cancelGoalBtn').onclick = function() {
+        document.getElementById('goalEditBox').style.display = 'none';
+    };
+    document.getElementById('saveGoalBtn').onclick = async function() {
+        const goal = document.getElementById('goalInput').value;
+        const domain = document.getElementById('domainInput').value;
+        const priority = parseInt(document.getElementById('priorityInput').value, 10);
+        if (!goal) return;
+        await fetch('/api/meta/goals', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({goal,domain,priority})});
+        document.getElementById('goalEditBox').style.display = 'none';
+        document.getElementById('goalInput').value = '';
+        fetchAnalytics();
+    };
+    window.deleteGoal = async function(idx) {
+        await fetch(`/api/meta/goals?idx=${idx}`, {method:'DELETE'});
+        fetchAnalytics();
+    };
+        const res = await fetch('/api/meta/activate', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({interval:600})});
+        const data = await res.json();
+        document.getElementById('statusMsg').innerHTML = `<span class='badge bg-success'>${data.status}</span> (Interval: ${data.interval}s)`;
+        setTimeout(() => { document.getElementById('statusMsg').innerHTML = ''; }, 3000);
+        fetchAnalytics();
+    };
+    setInterval(fetchAnalytics, 5000);
+    fetchAnalytics();
+</script>
+</body>
+</html>

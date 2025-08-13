@@ -1,0 +1,41 @@
+{
+  "learning_demo": {
+    "concepts_learned": [
+      {
+        "type": "function",
+        "pattern": "def ",
+        "context": "arameters and return values.\n        For example: def add_numbers(a, b): return a + b\n        You can call this function like: result = add_numbers(5,",
+        "confidence": 0.7239296866431333
+      },
+      {
+        "type": "loop",
+        "pattern": "for ",
+        "context": "on can take parameters and return values.\n        For example: def add_numbers(a, b): return a + b\n        You can call this function like: result = a",
+        "confidence": 0.9360490646975325
+      }
+    ],
+    "learning_quality": 0.3439957502681332,
+    "processing_time": 0.002259969711303711,
+    "consciousness_level": 0.0034399575026813323
+  },
+  "explanation_demo": {
+    "code": "\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    else:\n        return fibonacci(n-1) + fibonacci(n-2)\n\nresult = fibonacci(10)\nprint(f\"Fibonacci of 10 is: {result}\")\n",
+    "language": "python",
+    "explanation": "This python code contains 10 lines and demonstrates several programming concepts: This is moderately complex code with some advanced features.",
+    "concepts_identified": [],
+    "complexity_score": 0.5,
+    "explanation_quality": 0.5006879915005362,
+    "consciousness_applied": 0.0034399575026813323
+  },
+  "status": {
+    "consciousness_level": 0.0034399575026813323,
+    "lessons_learned": 1,
+    "languages_known": [
+      "python_basics",
+      "javascript_basics"
+    ],
+    "evolution_generation": 0,
+    "population_fitness": 0.0,
+    "total_concepts": 8
+  }
+}

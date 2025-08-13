@@ -1,0 +1,94 @@
+# Full requirements for HyperbolicLearner (core, ML, UI, automation, video, analytics)
+
+# --- Core scientific/ML ---
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+scikit-learn
+librosa
+psutil
+
+# --- Deep learning ---
+torch
+torchvision
+torchaudio
+tensorflow
+onnxruntime
+sentence-transformers
+transformers
+gensim
+spacy
+yake
+
+# --- Video/audio/image processing ---
+moviepy
+opencv-python-headless
+imageio
+imageio-ffmpeg
+pytube
+yt-dlp
+youtube_dl
+pydub
+soundfile
+whisper
+mediapipe
+dlib
+av
+
+# --- Flask & web UI ---
+flask
+flask_sqlalchemy
+flask_migrate
+flask_socketio
+flask_login
+flask_wtf
+wtforms
+flask_admin
+flask_cors
+flask_compress
+flask_limiter
+flask_caching
+flask_babel
+flask_jwt_extended
+flask_mail
+flask_talisman
+flask_seasurf
+flask_sslify
+flask_session
+flask_sitemap
+flask_restx
+flask_swagger_ui
+flask_debugtoolbar
+flask_uploads
+
+# --- Task queue, cache, search ---
+celery
+diskcache
+whoosh
+
+# --- Visualization ---
+plotly
+umap-learn
+hdbscan
+
+# --- Automation, UI, OS ---
+pyautogui
+pynput
+mss
+pytesseract
+pyobjc-framework-Quartz
+Xlib
+pyscreenshot
+webcolors
+
+# --- NLP, text, misc ---
+nltk
+pydantic
+colorama
+rich
+PyYAML
+python-dotenv
+
+

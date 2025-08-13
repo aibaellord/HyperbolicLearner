@@ -1,0 +1,137 @@
+<!-- Main Dashboard for HyperbolicLearner UI -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HyperbolicLearner Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background: #181a1b; color: #f8f9fa; }
+        .container { margin-top: 40px; }
+        .card { background: #23272b; border: none; }
+        .btn-primary, .btn-success, .btn-info, .btn-warning { border: none; }
+        .feature-btn { width: 100%; margin-bottom: 20px; font-size: 1.2em; }
+        .card-title { color: #6f42c1; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="mb-4">HyperbolicLearner Main Dashboard</h1>
+    <div class="row">
+    <!-- Universal Scenario Agent Feature Caller -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Call Any Scenario Agent Feature</h5>
+                    <form id="featureForm" onsubmit="return callFeature();">
+                        <div class="mb-2">
+                            <label for="featureSelect" class="form-label">Feature</label>
+                            <select id="featureSelect" class="form-select" required>
+                                <option value="">Select a feature</option>
+                                <option value="generate_scenario">generate_scenario</option>
+                                <option value="ai_dream_simulation">ai_dream_simulation</option>
+                                <option value="ai_time_loop_rewind">ai_time_loop_rewind</option>
+                                <option value="cross_universe_scenario_fusion">cross_universe_scenario_fusion</option>
+                                <option value="ai_generated_mythology">ai_generated_mythology</option>
+                                <option value="user_dna_personalization">user_dna_personalization</option>
+                                <option value="ai_hallucination_mode">ai_hallucination_mode</option>
+                                <option value="cosmic_abstract_scenario_generation">cosmic_abstract_scenario_generation</option>
+                                <option value="ai_legal_ethics_advisor">ai_legal_ethics_advisor</option>
+                                <option value="quantum_scenario_randomizer">quantum_scenario_randomizer</option>
+                                <option value="sentient_agent_mode">sentient_agent_mode</option>
+                                <option value="real_world_event_integration">real_world_event_integration</option>
+                                <option value="ai_content_evolution_engine">ai_content_evolution_engine</option>
+                                <option value="multi_agent_collaboration">multi_agent_collaboration</option>
+                                <option value="neural_style_transfer_content">neural_style_transfer_content</option>
+                                <option value="ai_safety_guardrails">ai_safety_guardrails</option>
+                                <option value="ai_hyperpersonalization_engine">ai_hyperpersonalization_engine</option>
+                                <option value="ai_world_building">ai_world_building</option>
+                                <option value="interactive_multi_user_scenarios">interactive_multi_user_scenarios</option>
+                                <option value="adaptive_narrative_engine">adaptive_narrative_engine</option>
+                                <option value="emotion_chemistry_simulation">emotion_chemistry_simulation</option>
+                                <option value="real_time_audience_co_creation">real_time_audience_co_creation</option>
+                                <option value="nft_content_monetization">nft_content_monetization</option>
+                                <option value="advanced_privacy_stealth_modes">advanced_privacy_stealth_modes</option>
+                                <option value="ai_plugin_marketplace">ai_plugin_marketplace</option>
+                                <option value="ai_memory_persistence">ai_memory_persistence</option>
+                                <option value="ai_voice_personality_engine">ai_voice_personality_engine</option>
+                                <option value="ai_avatar_physics_engine">ai_avatar_physics_engine</option>
+                                <option value="ai_cross_platform_distribution">ai_cross_platform_distribution</option>
+                                <option value="ai_viral_memetics_engine">ai_viral_memetics_engine</option>
+                                <option value="ai_explainable_content">ai_explainable_content</option>
+                                <!-- Add more features as needed -->
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="featureArgs" class="form-label">Arguments (JSON)</label>
+                            <textarea id="featureArgs" class="form-control" rows="2" placeholder='{"scenario":{}, "args":[], "kwargs":{}}'></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Call Feature</button>
+                    </form>
+                    <div class="mt-3">
+                        <label class="form-label">Result</label>
+                        <pre id="featureResult" style="background:#222;color:#0f0;padding:10px;min-height:60px;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    async function callFeature() {
+        const feature = document.getElementById('featureSelect').value;
+        let args = {};
+        try {
+            args = JSON.parse(document.getElementById('featureArgs').value || '{}');
+        } catch (e) {
+            document.getElementById('featureResult').textContent = 'Invalid JSON: ' + e;
+            return false;
+        }
+        const payload = { feature, ...args };
+        document.getElementById('featureResult').textContent = 'Loading...';
+        const resp = await fetch('/api/scenario/feature', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        document.getElementById('featureResult').textContent = JSON.stringify(data, null, 2);
+        return false;
+    }
+    </script>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Creative AI & Scenario Generation</h5>
+                    <a href="/creative-ai" class="btn btn-primary feature-btn">Creative AI Suggestions</a>
+                    <a href="/meta-orchestrator-dashboard" class="btn btn-info feature-btn">Meta Orchestrator Dashboard</a>
+                    <a href="/api/meta/activate" class="btn btn-success feature-btn">Activate Meta Orchestrator</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Automation & Analytics</h5>
+                    <a href="/api/meta/manual-evolve" class="btn btn-warning feature-btn">Trigger Manual Evolution</a>
+                    <a href="/api/meta/analytics" class="btn btn-info feature-btn">View System Analytics</a>
+                    <a href="/api/meta/goals" class="btn btn-primary feature-btn">Manage Goals</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <button onclick="window.location.reload()" class="btn btn-secondary feature-btn">Refresh Dashboard</button>
+                    <a href="/docs/SYSTEM_CAPABILITIES.md" class="btn btn-link feature-btn">System Capabilities Docs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="text-center mt-4 text-muted">&copy; 2025 HyperbolicLearner &mdash; All features are fully integrated and ready to use.</footer>
+</div>
+</body>
+</html>

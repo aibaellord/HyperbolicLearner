@@ -10,7 +10,6 @@ __version__ = '0.1.0'
 __author__ = 'HyperbolicLearner Team'
 
 # Import core components for easy access
-from .core.config import ConfigManager, SystemCapabilities
 from .video_processor.youtube_learner import YouTubeLearner
 from .video_processor.downloader import VideoDownloader
 from .video_processor.accelerator import VideoAccelerator

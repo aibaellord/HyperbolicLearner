@@ -1,0 +1,253 @@
+            <div id="analyticsBox" class="scenario-preview" style="display:none; margin-top:18px; background:#23272b;">
+                <b>Advanced Analytics</b>
+                <div id="heatmap" style="margin:12px 0;"></div>
+                <div id="timeline" style="margin:12px 0;"></div>
+                <div id="shareBox" style="margin:12px 0;"></div>
+            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Orchestrated Scenario Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: linear-gradient(135deg, #181a1b 0%, #23272b 100%); color: #f8f9fa; }
+        .container { margin-top: 40px; max-width: 700px; }
+        .card { background: #23272b; border: none; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); }
+        .form-label { color: #f8f9fa; }
+        .btn-primary { background: linear-gradient(90deg, #007bff 0%, #00c6ff 100%); border: none; font-weight: 600; }
+        .result-box { background: #212529; color: #b8e994; padding: 20px; border-radius: 8px; margin-top: 20px; font-size: 1.1em; }
+        .feature-toggle { display: flex; align-items: center; margin-bottom: 8px; }
+        .feature-toggle label { margin-left: 8px; font-weight: 500; }
+        .progress { height: 24px; background: #181a1b; }
+        .progress-bar { font-size: 1em; font-weight: 600; }
+        .scenario-preview { background: #181a1b; color: #f8f9fa; border-radius: 8px; padding: 16px; margin-top: 16px; }
+        .icon { color: #00c6ff; margin-right: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Orchestrated Scenario Generator</h2>
+            <form id="orchestrated-form">
+                <div class="mb-3">
+                    <label for="contentSources" class="form-label"><i class="fa-solid fa-link icon"></i>Content Sources (comma-separated URLs)</label>
+                    <input type="text" class="form-control" id="contentSources" placeholder="https://example.com/video1, https://example.com/video2">
+                </div>
+                <div class="mb-3">
+                    <label for="userProfile" class="form-label"><i class="fa-solid fa-user icon"></i>User Profile (JSON)</label>
+                    <textarea class="form-control" id="userProfile" rows="3" placeholder='{"user_id": "demo", "preferences": {}}'></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><i class="fa-solid fa-sliders icon"></i>Feature Toggles</label>
+                    <div class="feature-toggle"><input type="checkbox" id="toggle_micro_detail" checked><label for="toggle_micro_detail">Micro-Detail Realism</label></div>
+                    <div class="feature-toggle"><input type="checkbox" id="toggle_automation" checked><label for="toggle_automation">Full Automation</label></div>
+                    <div class="feature-toggle"><input type="checkbox" id="toggle_self_evolve" checked><label for="toggle_self_evolve">Self-Evolving Logic</label></div>
+                    <div class="feature-toggle"><input type="checkbox" id="toggle_tactical" checked><label for="toggle_tactical">Tactical Override</label></div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-rocket"></i> Generate Scenario</button>
+            </form>
+            <div class="progress mt-4" id="progressBarContainer" style="display:none;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" id="progressBar" role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div id="scenarioPreview" class="scenario-preview" style="display:none;"></div>
+            <div id="scenarioSummary" class="scenario-preview" style="display:none;"></div>
+            <div id="historyBox" class="scenario-preview" style="display:none; margin-top:18px;">
+                <b>Scenario History</b>
+                <ul id="historyList" style="margin-bottom:0;"></ul>
+            </div>
+            <div id="compareBox" class="scenario-preview" style="display:none; margin-top:18px;">
+                <b>Compare Scenarios</b>
+                <div id="compareContent"></div>
+            </div>
+            <div id="suggestionBox" class="scenario-preview" style="display:none; margin-top:18px; background:#1a2a1b; color:#b8e994;">
+                <b>Smart Suggestions</b>
+                <ul id="suggestionList"></ul>
+            </div>
+            <div id="result" class="result-box mt-4" style="display:none; position:relative;">
+                <button id="copyBtn" class="btn btn-sm btn-outline-info" style="position:absolute; top:12px; right:12px; display:none;"><i class="fa-solid fa-copy"></i> Copy</button>
+                <button id="downloadBtn" class="btn btn-sm btn-outline-success" style="position:absolute; top:12px; right:80px; display:none;"><i class="fa-solid fa-download"></i> Download</button>
+                <pre id="resultJson" style="background:none; color:inherit; border:none; margin:0; padding:0;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('orchestrated-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const contentSources = document.getElementById('contentSources').value.split(',').map(s => s.trim()).filter(Boolean);
+        let userProfile = {};
+        try {
+            userProfile = JSON.parse(document.getElementById('userProfile').value || '{}');
+        } catch (err) {
+            alert('Invalid JSON in User Profile');
+            return;
+        }
+        // Feature toggles
+        const toggles = {
+            micro_detail: document.getElementById('toggle_micro_detail').checked,
+            automation: document.getElementById('toggle_automation').checked,
+            self_evolve: document.getElementById('toggle_self_evolve').checked,
+            tactical: document.getElementById('toggle_tactical').checked
+        };
+        // Show progress bar
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressBar = document.getElementById('progressBar');
+        progressBarContainer.style.display = 'block';
+        progressBar.style.width = '10%';
+        progressBar.textContent = '10%';
+        // Simulate progress
+        let progress = 10;
+        const progressInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.floor(Math.random() * 7) + 2;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+            }
+        }, 200);
+        // Preview scenario config
+        const preview = document.getElementById('scenarioPreview');
+        preview.style.display = 'block';
+        preview.innerHTML = `<b>Preview:</b><br>Content Sources: <code>${contentSources.join(', ')}</code><br>User Profile: <code>${JSON.stringify(userProfile)}</code><br>Features: <code>${JSON.stringify(toggles)}</code>`;
+        // Fetch scenario
+        const response = await fetch('/api/scenario/orchestrated', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content_sources: contentSources, user_profile: userProfile, toggles })
+        });
+        const data = await response.json();
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+        setTimeout(() => { progressBarContainer.style.display = 'none'; }, 800);
+        preview.style.display = 'none';
+        // Scenario summary
+        const summaryBox = document.getElementById('scenarioSummary');
+        summaryBox.style.display = 'block';
+        const scenario = data.scenario || {};
+        let summaryHtml = `<b>Scenario Summary</b><ul>`;
+        summaryHtml += `<li><b>Type:</b> ${scenario.base || 'N/A'}</li>`;
+        summaryHtml += `<li><b>Tactical:</b> ${scenario.tactical ? 'Yes' : 'No'}</li>`;
+        summaryHtml += `<li><b>Micro-Detail Features:</b> <code>${(scenario.micro_detail_realism || []).join(', ')}</code></li>`;
+        summaryHtml += `<li><b>Learned Features:</b> <code>${(scenario.learned_features || []).join(', ')}</code></li>`;
+        summaryHtml += `<li><b>Feature Toggles:</b> <code>${JSON.stringify(scenario.toggles || {})}</code></li>`;
+        summaryHtml += `<li><b>Evolution Log:</b> <code>${JSON.stringify(scenario.evolution_log || [])}</code></li>`;
+        summaryHtml += `</ul>`;
+        summaryBox.innerHTML = summaryHtml;
+        // Scenario history
+        let history = JSON.parse(localStorage.getItem('scenarioHistory') || '[]');
+        history.push(scenario);
+        if (history.length > 10) history = history.slice(-10);
+        localStorage.setItem('scenarioHistory', JSON.stringify(history));
+        const historyBox = document.getElementById('historyBox');
+        const historyList = document.getElementById('historyList');
+        historyBox.style.display = 'block';
+        historyList.innerHTML = '';
+        history.forEach((sc, idx) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<b>#${history.length-idx}:</b> <code>${sc.base || 'N/A'}</code> | <span style='color:#b8e994;'>${(sc.micro_detail_realism||[]).length} micro-details</span> <button class='btn btn-xs btn-outline-info' style='margin-left:8px;' onclick='window.showCompare(${history.length-idx-1})'>Compare</button>`;
+            historyList.appendChild(li);
+        });
+        // Scenario comparison
+        window.showCompare = function(idx) {
+            const compareBox = document.getElementById('compareBox');
+            const compareContent = document.getElementById('compareContent');
+            compareBox.style.display = 'block';
+            const current = history[history.length-1];
+            const other = history[idx];
+            let diff = '';
+            diff += `<b>Current:</b> <code>${current.base}</code> | <b>Compared:</b> <code>${other.base}</code><br>`;
+            diff += `<b>Micro-Details:</b> <span style='color:#b8e994;'>${(current.micro_detail_realism||[]).length}</span> vs <span style='color:#b8e994;'>${(other.micro_detail_realism||[]).length}</span><br>`;
+            diff += `<b>Learned Features:</b> <span style='color:#b8e994;'>${(current.learned_features||[]).length}</span> vs <span style='color:#b8e994;'>${(other.learned_features||[]).length}</span><br>`;
+            diff += `<b>Toggles:</b> <code>${JSON.stringify(current.toggles||{})}</code> vs <code>${JSON.stringify(other.toggles||{})}</code><br>`;
+            compareContent.innerHTML = diff;
+        };
+        // Smart suggestions
+        const suggestionBox = document.getElementById('suggestionBox');
+        const suggestionList = document.getElementById('suggestionList');
+        suggestionBox.style.display = 'block';
+        suggestionList.innerHTML = '';
+        if ((scenario.micro_detail_realism||[]).length < 10) {
+            suggestionList.innerHTML += '<li>Try enabling more micro-detail features for even greater realism.</li>';
+        }
+        if (!scenario.tactical) {
+            suggestionList.innerHTML += '<li>Enable tactical override for maximum scenario impact.</li>';
+        }
+        if ((scenario.learned_features||[]).length < 5) {
+            suggestionList.innerHTML += '<li>Feed more diverse content sources for richer feature learning.</li>';
+        }
+        if ((scenario.evolution_log||[]).length < 2) {
+            suggestionList.innerHTML += '<li>Enable self-evolving logic for continuous improvement.</li>';
+        }
+        if (!suggestionList.innerHTML) {
+            suggestionList.innerHTML = '<li>Perfect! All advanced features are maximized.</li>';
+        }
+        suggestionBox.style.display = 'block';
+        // Advanced Analytics
+        const analyticsBox = document.getElementById('analyticsBox');
+        analyticsBox.style.display = 'block';
+        // Micro-detail feature heatmap
+        const heatmap = document.getElementById('heatmap');
+        const microDetails = scenario.micro_detail_realism || [];
+        let heatmapHtml = '<b>Micro-Detail Feature Heatmap</b><br>';
+        if (microDetails.length) {
+            heatmapHtml += '<div style="display:flex; flex-wrap:wrap; gap:6px;">';
+            microDetails.forEach(f => {
+                const color = `hsl(${Math.floor(Math.random()*360)},70%,40%)`;
+                heatmapHtml += `<span style='background:${color}; color:#fff; padding:3px 8px; border-radius:6px; font-size:0.95em;'>${f}</span>`;
+            });
+            heatmapHtml += '</div>';
+        } else {
+            heatmapHtml += '<i>No micro-detail features detected.</i>';
+        }
+        heatmap.innerHTML = heatmapHtml;
+        // Evolution timeline
+        const timeline = document.getElementById('timeline');
+        const evolution = scenario.evolution_log || [];
+        let timelineHtml = '<b>Evolution Timeline</b><ul style="font-size:0.98em;">';
+        if (evolution.length) {
+            evolution.forEach(ev => {
+                timelineHtml += `<li><code>${JSON.stringify(ev)}</code></li>`;
+            });
+        } else {
+            timelineHtml += '<li>No evolution events recorded.</li>';
+        }
+        timelineHtml += '</ul>';
+        timeline.innerHTML = timelineHtml;
+        // Collaborative sharing link
+        const shareBox = document.getElementById('shareBox');
+        const shareUrl = `${window.location.origin}/orchestrated-scenario#${btoa(resultJson.textContent).slice(0,128)}`;
+        shareBox.innerHTML = `<b>Share Scenario:</b> <input type='text' class='form-control' style='display:inline;width:70%;max-width:340px;' value='${shareUrl}' readonly> <button class='btn btn-sm btn-outline-info' onclick='navigator.clipboard.writeText("${shareUrl}")'><i class='fa-solid fa-share'></i> Copy Link</button>`;
+
+        // Result JSON
+        const resultBox = document.getElementById('result');
+        const resultJson = document.getElementById('resultJson');
+        resultBox.style.display = 'block';
+        resultJson.textContent = JSON.stringify(data, null, 2);
+        // Copy/download buttons
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        copyBtn.style.display = 'inline-block';
+        downloadBtn.style.display = 'inline-block';
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(resultJson.textContent);
+            copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            setTimeout(() => { copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 1200);
+        };
+        downloadBtn.onclick = () => {
+            const blob = new Blob([resultJson.textContent], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'orchestrated_scenario.json';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+        };
+    });
+</script>
+</body>
+</html>

@@ -1,3 +1,72 @@
+<script>
+// Advanced Scenario Generation
+document.addEventListener('DOMContentLoaded', function() {
+    const advBtn = document.getElementById('generate-advanced-scenario');
+    const advDetails = document.getElementById('advanced-scenario-details');
+    if (advBtn) {
+        advBtn.onclick = function() {
+            // Collect selected features
+            const featureCheckboxes = document.querySelectorAll('.adv-feature-checkbox:checked');
+            const features = Array.from(featureCheckboxes).map(cb => cb.value);
+            // Optionally collect feature kwargs (future)
+            fetch('/api/scenario/advanced', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user_prefs: {}, features: features, feature_kwargs: {}})
+            })
+            .then(res => res.json())
+            .then(data => {
+                advDetails.textContent = JSON.stringify(data.scenario, null, 2);
+            });
+        };
+    }
+});
+</script>
+        <!-- Advanced Scenario Generator -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-stars me-2"></i>Advanced Scenario Generator
+                </h5>
+                <button class="btn btn-sm btn-light" id="generate-advanced-scenario">
+                    <i class="bi bi-rocket-takeoff me-1"></i>Generate Advanced Scenario
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <h6>Select Features</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_world_building"> AI World Building</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_dream_simulation"> Dream Simulation</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="quantum_scenario_randomizer"> Quantum Randomizer</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="sentient_agent_mode"> Sentient Agents</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="user_dna_personalization"> DNA Personalization</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_hallucination_mode"> Hallucination Mode</label><br>
+                            </div>
+                            <div class="col-md-4">
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="adaptive_narrative_engine"> Adaptive Narrative</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="emotion_chemistry_simulation"> Emotion/Chemistry</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="real_time_audience_co_creation"> Audience Co-Creation</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="nft_content_monetization"> NFT Monetization</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="advanced_privacy_stealth_modes"> Privacy/Stealth</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_plugin_marketplace"> Plugin Marketplace</label><br>
+                            </div>
+                            <div class="col-md-4">
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_memory_persistence"> AI Memory</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_voice_personality_engine"> Voice Personalities</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_avatar_physics_engine"> Avatar Physics</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_cross_platform_distribution"> Cross-Platform</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_viral_memetics_engine"> Viral Memetics</label><br>
+                                <label><input type="checkbox" class="adv-feature-checkbox" value="ai_explainable_content"> Explainable AI</label><br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <pre id="advanced-scenario-details" class="bg-light p-2 rounded small" style="min-height:120px;"></pre>
+            </div>
+        </div>
 {% extends "base.html" %}
 
 {% block title %}Dashboard - HyperbolicLearner{% endblock %}
@@ -58,6 +127,122 @@
 <!-- System Overview -->
 <div class="row mb-4">
     <div class="col-12">
+<script>
+// Scenario Generation (Random/Surprise Me)
+document.addEventListener('DOMContentLoaded', function() {
+    const scenarioBtn = document.getElementById('generate-scenario');
+    const scenarioDetails = document.getElementById('scenario-details');
+    if (scenarioBtn) {
+        scenarioBtn.onclick = function() {
+            fetch('/api/scenario/surprise')
+                .then(res => res.json())
+                .then(data => {
+                    scenarioDetails.textContent = data.details || JSON.stringify(data);
+                });
+        };
+    }
+
+    // Batch Processing
+    const batchBtn = document.getElementById('start-batch-processing');
+    const batchUpload = document.getElementById('batch-upload');
+    const batchStatus = document.getElementById('batch-status');
+    if (batchBtn && batchUpload) {
+        batchBtn.onclick = function() {
+            const files = batchUpload.files;
+            if (!files.length) {
+                batchStatus.textContent = 'No files selected.';
+                return;
+            }
+            // For demo: just send file names
+            fetch('/api/batch/submit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({jobs: Array.from(files).map(f => f.name)})
+            })
+            .then(res => res.json())
+            .then(data => {
+                batchStatus.textContent = 'Batch submitted: ' + (data.job_ids || []).join(', ');
+            });
+        };
+    }
+
+    // Real-Time Scene Direction (Edit Preview)
+    const editPreviewBtn = document.getElementById('edit-preview');
+    const previewPanel = document.getElementById('preview-panel');
+    if (editPreviewBtn && previewPanel) {
+        editPreviewBtn.onclick = function() {
+            // For demo: send random direction
+            fetch('/api/scene/direction', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({chemistry: 'intense', emotion: 'desire', positions: ['unique'], activities: ['surprise']})
+            })
+            .then(res => res.json())
+            .then(data => {
+                previewPanel.textContent = 'Preview updated: ' + JSON.stringify(data.data);
+            });
+        };
+    }
+});
+</script>
+        <!-- Adult Content Studio -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-film me-2"></i>Adult Content Studio
+                </h5>
+                <button class="btn btn-sm btn-light" id="launch-scenario-learning">
+                    <i class="bi bi-lightbulb me-1"></i>Auto-Learn Scenarios
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <h6>Scenario Templates</h6>
+                        <select class="form-select mb-2" id="scenario-template-select">
+                            <option>Trending</option>
+                            <option>Custom</option>
+                            <option>Random</option>
+                        </select>
+                        <button class="btn btn-primary w-100 mb-2" id="generate-scenario">Generate Scenario</button>
+                        <div id="scenario-details" class="small text-muted"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Batch Upload</h6>
+                        <input type="file" class="form-control mb-2" id="batch-upload" multiple>
+                        <button class="btn btn-success w-100 mb-2" id="start-batch-processing">Start Batch Processing</button>
+                        <div id="batch-status" class="small text-muted"></div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Real-Time Preview & Editing</h6>
+                        <div id="preview-panel" class="border rounded bg-light mb-2" style="height:180px; overflow:auto;"></div>
+                        <button class="btn btn-warning w-100 mb-2" id="edit-preview">Edit Preview</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Compliance & Privacy</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="consent-check" checked>
+                            <label class="form-check-label" for="consent-check">Require Consent Verification</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="watermark-check" checked>
+                            <label class="form-check-label" for="watermark-check">Enable Watermarking</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="privacy-check" checked>
+                            <label class="form-check-label" for="privacy-check">Privacy-Preserving Computation</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Scenario Learning</h6>
+                        <button class="btn btn-outline-info w-100 mb-2" id="refresh-learned-scenarios">Refresh Learned Scenarios</button>
+                        <ul id="learned-scenarios-list" class="list-group small"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card shadow-sm">
             <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">

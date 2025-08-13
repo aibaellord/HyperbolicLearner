@@ -379,5 +379,5 @@ class UIInteraction:
                 time.sleep(0.5)  # Wait before retrying
                 
             except Exception as e:
-                logger.error(f"Failed to replicate interaction (
+                logger.error(f"Failed to replicate interaction {self.interaction_id}: {e}")
 

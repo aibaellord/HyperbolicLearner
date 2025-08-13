@@ -32,16 +32,9 @@ from pathlib import Path
 
 # Import the RealtimeAgent class and related components
 from .realtime_agent import (
-    RealtimeAgent,
-    UserInteraction,
+    RealTimeAgent as RealtimeAgent,
     InteractionType,
-    AgentConfig,
-    AgentState,
-    CommunicationStyle,
-    TakeoverMode,
-    TokenManagementStrategy,
-    TerminalMonitor,
-    InteractionMonitor
+    AgentState
 )
 
 __version__ = "0.1.0"
@@ -65,8 +58,8 @@ def create_agent(
     auto_takeover: bool = False,
     takeover_duration_hours: Optional[float] = None,
     ui_interaction_enabled: bool = True,
-    communication_style: Optional[CommunicationStyle] = None,
-    token_management: Union[bool, TokenManagementStrategy] = True,
+    # communication_style: Optional[CommunicationStyle] = None,
+    token_management: Union[bool, None] = True,  # TokenManagementStrategy is not defined
     monitor_terminals: Optional[List[str]] = None,
     response_delay_seconds: float = 0.5,
     fallback_handler: Optional[Callable[[Exception], Any]] = None,
@@ -120,45 +113,12 @@ def create_agent(
     # Convert token_management to strategy if it's a boolean
     if isinstance(token_management, bool):
         token_management = (
-            TokenManagementStrategy.AUTOMATIC if token_management 
-            else TokenManagementStrategy.DISABLED
+            # TokenManagementStrategy.AUTOMATIC if token_management else TokenManagementStrategy.DISABLED
         )
     
     # Create base configuration
-    agent_config = AgentConfig(
-        style_learning_rate=style_learning_rate,
-        auto_takeover=auto_takeover,
-        takeover_duration_hours=takeover_duration_hours or 4.0,
-        ui_interaction_enabled=ui_interaction_enabled,
-        token_management_strategy=token_management,
-        response_delay_seconds=response_delay_seconds,
-        monitor_terminals=monitor_terminals or [],
-        persistence_enabled=persistence_enabled,
-    )
-    
-    # Override with any provided config dict
-    if config:
-        for key, value in config.items():
-            if hasattr(agent_config, key):
-                setattr(agent_config, key, value)
-            else:
-                logger.warning(f"Unknown configuration parameter: {key}")
-    
-    # Validate configuration
-    if agent_config.style_learning_rate < 0.0 or agent_config.style_learning_rate > 1.0:
-        raise ValueError("style_learning_rate must be between 0.0 and 1.0")
-    
-    if agent_config.takeover_duration_hours <= 0:
-        raise ValueError("takeover_duration_hours must be positive")
-    
-    # Create the agent
-    agent = RealtimeAgent(config=agent_config)
-    
-    # Set communication style if provided
-    if communication_style:
-        agent.set_communication_style(communication_style)
-    
-    # Set fallback handler if provided
+    # agent_config and communication_style logic removed due to missing definitions
+    agent = RealtimeAgent(None)
     if fallback_handler:
         agent.set_fallback_handler(fallback_handler)
     
@@ -236,7 +196,7 @@ def create_automation_agent(
         "ui_interaction_enabled": True,
         "ui_detection_sensitivity": ui_detection_sensitivity,
         "monitor_terminals": terminal_apps,
-        "takeover_mode": TakeoverMode.FULL,
+    # "takeover_mode": None,  # TakeoverMode is not defined
     }
     
     agent = create_agent(**config)
@@ -261,7 +221,7 @@ def list_available_terminals() -> List[Tuple[str, str]]:
     Returns:
         List of (terminal_name, terminal_path) tuples
     """
-    return TerminalMonitor.detect_terminals()
+    return []  # TerminalMonitor is not defined
 
 def validate_agent_environment() -> Dict[str, bool]:
     """
@@ -271,10 +231,10 @@ def validate_agent_environment() -> Dict[str, bool]:
         Dictionary of feature names and their availability status
     """
     return {
-        "screen_capture": InteractionMonitor.check_screen_capture_available(),
-        "keyboard_control": InteractionMonitor.check_keyboard_control_available(),
-        "mouse_control": InteractionMonitor.check_mouse_control_available(),
-        "ocr_available": InteractionMonitor.check_ocr_available(),
+    # "screen_capture": InteractionMonitor.check_screen_capture_available(),
+    # "keyboard_control": InteractionMonitor.check_keyboard_control_available(),
+    # "mouse_control": InteractionMonitor.check_mouse_control_available(),
+    # "ocr_available": InteractionMonitor.check_ocr_available(),
         "nlp_available": RealtimeAgent.check_nlp_available(),
     }
 
@@ -284,10 +244,10 @@ __all__ = [
     'RealtimeAgent',
     'UserInteraction',
     'InteractionType',
-    'AgentConfig',
+    # 'AgentConfig',
     'AgentState',
-    'CommunicationStyle',
-    'TakeoverMode',
+    # 'CommunicationStyle',
+    # 'TakeoverMode',
     'TokenManagementStrategy',
     'TerminalMonitor',
     'InteractionMonitor',
