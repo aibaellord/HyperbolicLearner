@@ -37,13 +37,13 @@ except ImportError:
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from src.core.config import ConfigManager
-    from src.video_processor.downloader import YouTubeDownloader
-    from src.video_processor.accelerator import VideoAccelerator
-    from src.ui_automation.ui_analyzer import UIAnalyzer
-    from src.knowledge_base.graph_db import KnowledgeGraph
-    from src.ml_engine.content_analyzer import ContentAnalyzer
-    from src.action_executor.executor import ActionExecutor
+    from core.config import ConfigManager
+    from video_processor.downloader import YouTubeDownloader
+    from video_processor.accelerator import VideoAccelerator
+    from ui_automation.ui_analyzer import UIAnalyzer
+    from knowledge_base.graph_db import KnowledgeGraph
+    from ml_engine.content_analyzer import ContentAnalyzer
+    from action_executor.executor import ActionExecutor
     MODULES_AVAILABLE = True
 except ImportError as e:
     MODULES_AVAILABLE = False

@@ -1,5 +1,9 @@
 # HyperbolicLearner
 
+> **📋 For realistic, technical documentation based on actual system capabilities, see:**
+> - **[📖 Comprehensive Documentation](README_COMPREHENSIVE.md)** - Complete technical details
+> - **[🚀 Quick Setup Guide](QUICK_SETUP_GUIDE.md)** - 5-minute setup and verification
+
 ## Advanced Knowledge Extraction and Automation System
 
 HyperbolicLearner is a revolutionary system designed to dramatically accelerate learning from video tutorials and automate complex workflows through advanced AI techniques. It combines hyperbolic video acceleration, computer vision, machine learning, and UI automation to transform passive video content into executable knowledge.

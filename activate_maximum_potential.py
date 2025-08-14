@@ -153,7 +153,7 @@ class ImmediateMaximumPotentialActivator:
             sys.path.append(str(self.base_dir / 'src'))
             
             # Initialize core systems
-            from src.workflow_automation.maximum_potential_engine import MaximumPotentialEngine
+            from workflow_automation.maximum_potential_engine import MaximumPotentialEngine
             
             self.engine = MaximumPotentialEngine(str(self.base_dir))
             await self.engine.activate_maximum_potential_mode()

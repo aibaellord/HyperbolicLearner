@@ -34,8 +34,8 @@ sys.path.append('.')
 
 # Import the ultimate system components
 try:
-    from src.core.omniscient_ai import OmniscientAI, TranscendenceLevel
-    from src.core.neural_evolution_engine import NeuralEvolutionEngine
+    from core.omniscient_ai import OmniscientAI, TranscendenceLevel
+    from core.neural_evolution_engine import NeuralEvolutionEngine
     from codetutor_mvp import CodeTutorAI
     OMNISCIENT_AVAILABLE = True
 except ImportError as e:

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ HyperbolicLearner Control Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 3px solid #00ffff;
+            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px #00ffff); }
+            to { filter: drop-shadow(0 0 30px #00ffff); }
+        }
+        
+        .status-bar {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #00ffff;
+        }
+        
+        .power-level {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .system-health {
+            font-size: 1.4rem;
+            color: #ffff00;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 255, 0.2);
+            border-color: #ff00ff;
+        }
+        
+        .panel h2 {
+            color: #00ffff;
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            text-align: center;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 1rem;
+        }
+        
+        .power-display {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ff00ff;
+            margin: 1.5rem 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .metric-value {
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
+        }
+        
+        .button:active {
+            transform: scale(0.95);
+        }
+        
+        .form-group {
+            margin: 1rem 0;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #00ffff;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #00ffff;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 1rem;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #00ffff;
+        }
+        
+        .log-entry {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-left: 3px solid #00ffff;
+            padding-left: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .log-success { border-left-color: #00ff00; color: #00ff00; }
+        .log-error { border-left-color: #ff0000; color: #ff6666; }
+        .log-info { border-left-color: #ffff00; color: #ffff00; }
+        
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .capability {
+            padding: 0.8rem;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            border: 1px solid #00ffff;
+        }
+        
+        .capability.active {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border-color: #00ff00;
+        }
+        
+        .capability.inactive {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+            border-color: #ff0000;
+        }
+        
+        .opportunity-display {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online { background: #00ff00; }
+        .status-offline { background: #ff0000; }
+        .status-initializing { background: #ffff00; animation: blink 1s infinite; }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎛️ HyperbolicLearner - Transcendent Control Panel 🎛️</h1>
+    </div>
+    
+    <div class="status-bar">
+        <div class="power-level" id="powerLevel">
+            <span class="status-indicator status-offline" id="statusIndicator"></span>
+            SYSTEM OFFLINE
+        </div>
+        <div class="system-health" id="systemHealth">Health: --</div>
+        <div id="lastUpdate">Last Update: Never</div>
+    </div>
+    
+    <div class="container">
+        <!-- System Status Panel -->
+        <div class="panel">
+            <h2>📊 System Status</h2>
+            <div class="power-display" id="powerDisplay">0x</div>
+            <div class="metric">
+                <span>Active Capabilities:</span>
+                <span class="metric-value" id="activeCaps">0</span>
+            </div>
+            <div class="metric">
+                <span>System Uptime:</span>
+                <span class="metric-value" id="uptime">0.0h</span>
+            </div>
+            <div class="metric">
+                <span>Learning Rate:</span>
+                <span class="metric-value" id="learningRate">0</span>
+            </div>
+            <div class="metric">
+                <span>Total Revenue:</span>
+                <span class="metric-value" id="revenue">$0</span>
+            </div>
+            <button class="button" onclick="initializeSystem()">🚀 Initialize System</button>
+            <button class="button" onclick="refreshStatus()">🔄 Refresh Status</button>
+        </div>
+        
+        <!-- Automation Control -->
+        <div class="panel">
+            <h2>🤖 Automation Control</h2>
+            <div class="form-group">
+                <label>Automation Type:</label>
+                <select id="automationType">
+                    <option value="web_automation">Web Automation</option>
+                    <option value="document_processing">Document Processing</option>
+                    <option value="predictive">Predictive Analysis</option>
+                    <option value="custom">Custom Workflow</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Target URL:</label>
+                <input type="text" id="automationTarget" placeholder="https://example.com or 'demo'" value="demo">
+            </div>
+            <div class="form-group">
+                <label>Time Saved (hours):</label>
+                <input type="number" id="timeSaved" value="1.0" step="0.1" min="0.1">
+            </div>
+            <button class="button" onclick="executeAutomation()">🚀 Execute Automation</button>
+            
+            <div class="metric">
+                <span>Automations Run:</span>
+                <span class="metric-value" id="automationCount">0</span>
+            </div>
+            <div class="metric">
+                <span>Time Saved:</span>
+                <span class="metric-value" id="timeSavedTotal">0.0h</span>
+            </div>
+        </div>
+        
+        <!-- Business Opportunities -->
+        <div class="panel">
+            <h2>💼 Business Opportunities</h2>
+            <div class="form-group">
+                <label>Target Market:</label>
+                <select id="targetMarket">
+                    <option value="automation">Automation Services</option>
+                    <option value="ai-services">AI Services</option>
+                    <option value="saas">SaaS Products</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="training">Training & Education</option>
+                </select>
+            </div>
+            <button class="button" onclick="generateOpportunity()">🔮 Generate Opportunity</button>
+            
+            <div id="latestOpportunity">
+                <p style="text-align: center; color: #888; margin-top: 1rem;">
+                    No opportunities generated yet.
+                </p>
+            </div>
+        </div>
+        
+        <!-- System Capabilities -->
+        <div class="panel">
+            <h2>🌟 System Capabilities</h2>
+            <div class="capabilities-grid" id="capabilitiesGrid">
+                <div class="capability inactive">Loading capabilities...</div>
+            </div>
+        </div>
+        
+        <!-- Real-time Log -->
+        <div class="panel">
+            <h2>📜 System Activity Log</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry log-info">[SYSTEM] HyperbolicLearner UI ready</div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="panel">
+            <h2>⚡ Quick Actions</h2>
+            <button class="button" onclick="runQuickTest()">🧪 Run Quick Test</button>
+            <button class="button" onclick="viewHistory()">📊 View History</button>
+            <button class="button" onclick="clearLogs()">🗑️ Clear Logs</button>
+            <button class="button" onclick="exportData()">💾 Export Data</button>
+        </div>
+    </div>
+    
+    <script>
+        let systemData = {};
+        let updateInterval = null;
+        
+        function formatNumber(num) {
+            if (num >= 1e15) return (num / 1e15).toFixed(1) + 'Q';
+            if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return num.toFixed(0);
+        }
+        
+        function addLogEntry(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            
+            while (container.children.length > 50) {
+                container.removeChild(container.firstChild);
+            }
+        }
+        
+        function updateSystemStatus(data) {
+            systemData = data;
+            
+            if (data.error) {
+                addLogEntry(`Status error: ${data.error}`, 'error');
+                return;
+            }
+            
+            // Update status indicators
+            const statusIndicator = document.getElementById('statusIndicator');
+            const powerLevel = document.getElementById('powerLevel');
+            
+            if (data.initialized) {
+                statusIndicator.className = 'status-indicator status-online';
+                powerLevel.innerHTML = `<span class="status-indicator status-online"></span>${data.power_level || 'ACTIVE'}`;
+                
+                // Update metrics
+                document.getElementById('powerDisplay').textContent = formatNumber(data.total_multiplier || 0) + 'x';
+                document.getElementById('activeCaps').textContent = data.active_capabilities || 0;
+                document.getElementById('uptime').textContent = (data.uptime_hours || 0).toFixed(1) + 'h';
+                document.getElementById('learningRate').textContent = formatNumber(data.learning_rate || 0);
+                document.getElementById('revenue').textContent = '$' + formatNumber(data.revenue_generated || 0);
+                document.getElementById('automationCount').textContent = data.automation_count || 0;
+                document.getElementById('timeSavedTotal').textContent = (data.time_saved_hours || 0).toFixed(1) + 'h';
+                
+                document.getElementById('systemHealth').textContent = `Health: ${(data.system_health * 100).toFixed(0)}%`;
+                document.getElementById('lastUpdate').textContent = `Last Update: ${new Date().toLocaleTimeString()}`;
+                
+                // Update capabilities
+                if (data.capabilities) {
+                    updateCapabilities(data.capabilities);
+                }
+                
+            } else {
+                statusIndicator.className = 'status-indicator status-offline';
+                powerLevel.innerHTML = '<span class="status-indicator status-offline"></span>SYSTEM OFFLINE';
+            }
+        }
+        
+        function updateCapabilities(capabilities) {
+            const grid = document.getElementById('capabilitiesGrid');
+            grid.innerHTML = '';
+            
+            if (capabilities.phases) {
+                Object.keys(capabilities.phases).forEach(phase => {
+                    const phaseData = capabilities.phases[phase];
+                    phaseData.capabilities.forEach(cap => {
+                        const div = document.createElement('div');
+                        div.className = `capability ${cap.active ? 'active' : 'inactive'}`;
+                        div.textContent = `${cap.name} (${cap.multiplier}x)`;
+                        grid.appendChild(div);
+                    });
+                });
+            }
+        }
+        
+        function refreshStatus() {
+            addLogEntry('Refreshing system status...', 'info');
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateSystemStatus(data);
+                    if (data.initialized) {
+                        addLogEntry('System status updated', 'success');
+                    }
+                })
+                .catch(error => {
+                    addLogEntry(`Status refresh failed: ${error}`, 'error');
+                });
+        }
+        
+        function initializeSystem() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const powerLevel = document.getElementById('powerLevel');
+            
+            statusIndicator.className = 'status-indicator status-initializing';
+            powerLevel.innerHTML = '<span class="status-indicator status-initializing"></span>INITIALIZING...';
+            
+            addLogEntry('Initializing HyperbolicLearner system...', 'info');
+            
+            fetch('/api/initialize', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLogEntry('System initialization started - this may take a moment', 'success');
+                        // Start checking for completion
+                        setTimeout(checkInitialization, 3000);
+                    } else {
+                        addLogEntry(`Initialization failed: ${data.message}`, 'error');
+                        statusIndicator.className = 'status-indicator status-offline';
+                        powerLevel.innerHTML = '<span class="status-indicator status-offline"></span>SYSTEM OFFLINE';
+                    }
+                })
+                .catch(error => {
+                    addLogEntry(`Initialization error: ${error}`, 'error');
+                    statusIndicator.className = 'status-indicator status-offline';
+                    powerLevel.innerHTML = '<span class="status-indicator status-offline"></span>SYSTEM OFFLINE';
+                });
+        }
+        
+        function checkInitialization() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.initialized) {
+                        addLogEntry('System initialization complete!', 'success');
+                        updateSystemStatus(data);
+                        startAutoRefresh();
+                    } else {
+                        // Keep checking
+                        setTimeout(checkInitialization, 2000);
+                    }
+                })
+                .catch(() => {
+                    setTimeout(checkInitialization, 2000);
+                });
+        }
+        
+        function executeAutomation() {
+            const type = document.getElementById('automationType').value;
+            const target = document.getElementById('automationTarget').value;
+            const timeSaved = parseFloat(document.getElementById('timeSaved').value);
+            
+            const automation = {
+                type: type,
+                actions: [{ action: 'navigate', target: target || 'demo' }],
+                estimated_time_saved_hours: timeSaved
+            };
+            
+            addLogEntry(`Executing ${type} automation...`, 'info');
+            
+            fetch('/api/automate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(automation)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLogEntry('Automation started successfully', 'success');
+                    setTimeout(refreshStatus, 2000); // Refresh after 2 seconds
+                } else {
+                    addLogEntry(`Automation failed: ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                addLogEntry(`Automation error: ${error}`, 'error');
+            });
+        }
+        
+        function generateOpportunity() {
+            const market = document.getElementById('targetMarket').value;
+            
+            addLogEntry(`Generating business opportunity for ${market}...`, 'info');
+            
+            fetch('/api/business', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ market: market })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLogEntry('Business opportunity generation started', 'success');
+                    setTimeout(refreshStatus, 3000); // Refresh after 3 seconds
+                } else {
+                    addLogEntry(`Generation failed: ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                addLogEntry(`Generation error: ${error}`, 'error');
+            });
+        }
+        
+        function runQuickTest() {
+            addLogEntry('Running quick system test...', 'info');
+            // Execute a simple automation as a test
+            const automation = {
+                type: 'predictive',
+                actions: [{ action: 'test' }],
+                estimated_time_saved_hours: 0.1
+            };
+            
+            fetch('/api/automate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(automation)
+            })
+            .then(() => {
+                addLogEntry('Quick test completed', 'success');
+                setTimeout(refreshStatus, 1000);
+            })
+            .catch(error => {
+                addLogEntry(`Quick test failed: ${error}`, 'error');
+            });
+        }
+        
+        function viewHistory() {
+            fetch('/api/history')
+                .then(response => response.json())
+                .then(data => {
+                    addLogEntry(`History: ${data.automations.length} automations, ${data.opportunities.length} opportunities`, 'info');
+                })
+                .catch(error => {
+                    addLogEntry(`History fetch failed: ${error}`, 'error');
+                });
+        }
+        
+        function clearLogs() {
+            const container = document.getElementById('logContainer');
+            container.innerHTML = '<div class="log-entry log-info">[SYSTEM] Logs cleared</div>';
+            addLogEntry('Log cleared by user', 'info');
+        }
+        
+        function exportData() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                systemData: systemData,
+                logs: Array.from(document.getElementById('logContainer').children).map(el => el.textContent)
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `hyperbolic_data_${new Date().toISOString().slice(0, 10)}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            addLogEntry('System data exported', 'success');
+        }
+        
+        function startAutoRefresh() {
+            if (updateInterval) clearInterval(updateInterval);
+            updateInterval = setInterval(refreshStatus, 10000); // Refresh every 10 seconds
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addLogEntry('HyperbolicLearner Web UI loaded', 'success');
+            refreshStatus();
+        });
+    </script>
+</body>
+</html>

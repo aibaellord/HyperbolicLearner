@@ -32,7 +32,7 @@ sys.path.append('src')
 sys.path.append('.')
 
 # Import what actually works
-from src.core.neural_evolution_engine import (
+from core.neural_evolution_engine import (
     NeuralEvolutionEngine, 
     SelfModifyingNeuralNetwork, 
     NeuralGene, 

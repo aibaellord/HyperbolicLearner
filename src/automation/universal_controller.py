@@ -476,22 +476,64 @@ class UniversalInterfaceController:
 # Specialized interface controllers
 
 class WebInterfaceController:
-    """Controller for web browser automation"""
+    """Controller for web browser automation - Reuses single browser instance with safety limits"""
+    
+    _shared_driver = None  # Class-level shared driver
+    _driver_initialized = False
+    _browser_count = 0  # Track browser instances
+    _max_browsers = 1   # Maximum allowed browsers
     
     def __init__(self, config: Dict):
         self.config = config
         self.driver = None
+        self._instance_id = id(self)
         
     async def initialize(self):
-        """Initialize web driver"""
+        """Initialize web driver (reuse existing if available)"""
         if SELENIUM_AVAILABLE:
-            options = webdriver.ChromeOptions()
-            if self.config.get('headless_mode', False):
-                options.add_argument('--headless')
-            options.add_argument('--no-sandbox')
-            options.add_argument('--disable-dev-shm-usage')
-            
-            self.driver = webdriver.Chrome(options=options)
+            # Use shared driver if available
+            if WebInterfaceController._shared_driver and not WebInterfaceController._driver_initialized:
+                try:
+                    # Test if driver is still alive
+                    WebInterfaceController._shared_driver.current_url
+                    self.driver = WebInterfaceController._shared_driver
+                    WebInterfaceController._driver_initialized = True
+                    print("🌐 Reusing existing Chrome browser instance")
+                    return
+                except:
+                    # Driver is dead, create new one
+                    WebInterfaceController._shared_driver = None
+                    
+            # Create new driver only if needed
+            if not WebInterfaceController._shared_driver:
+                options = webdriver.ChromeOptions()
+                if self.config.get('headless_mode', False):
+                    options.add_argument('--headless')
+                else:
+                    print("🌐 Creating new Chrome browser instance")
+                    
+                options.add_argument('--no-sandbox')
+                options.add_argument('--disable-dev-shm-usage')
+                options.add_argument('--disable-web-security')
+                options.add_argument('--disable-features=VizDisplayCompositor')
+                
+                WebInterfaceController._shared_driver = webdriver.Chrome(options=options)
+                WebInterfaceController._driver_initialized = True
+                
+            self.driver = WebInterfaceController._shared_driver
+    
+    @classmethod
+    def cleanup_shared_driver(cls):
+        """Clean up shared driver"""
+        if cls._shared_driver:
+            try:
+                cls._shared_driver.quit()
+                print("🧹 Chrome browser cleaned up")
+            except:
+                pass
+            finally:
+                cls._shared_driver = None
+                cls._driver_initialized = False
             
     async def execute_action(self, action: UniversalAction) -> Any:
         """Execute web action"""

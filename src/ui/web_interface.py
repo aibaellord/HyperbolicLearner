@@ -458,7 +458,7 @@ except ImportError:
 
 # Import HyperbolicLearner components
 # Absolute imports for Flask compatibility
-from core.config import SystemConfig
+from core.config import Config
 from video_processor.youtube_learner import YouTubeLearner
 from video_processor.accelerator import VideoAccelerator
 from ml_engine.content_analyzer import ContentAnalyzer

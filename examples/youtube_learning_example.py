@@ -25,11 +25,11 @@ project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
 try:
-    from src.core.config import SystemConfig
-    from src.video_processor.downloader import YouTubeDownloader
-    from src.video_processor.accelerator import VideoAccelerator
-    from src.ui_automation.ui_analyzer import UIInteractionDetector
-    from src.knowledge_base.graph_db import KnowledgeGraph
+    from core.config import SystemConfig
+    from video_processor.downloader import YouTubeDownloader
+    from video_processor.accelerator import VideoAccelerator
+    from ui_automation.ui_analyzer import UIInteractionDetector
+    from knowledge_base.graph_db import KnowledgeGraph
 except ImportError as e:
     print(f"Error importing HyperbolicLearner modules: {e}")
     print("Make sure you've installed all required dependencies.")

@@ -1,0 +1,911 @@
+#!/usr/bin/env python3
+"""
+🎛️ HYPERBOLICLEARNER WEB UI 🎛️
+===============================
+
+Modern web interface for the HyperbolicLearner Transcendent System
+Features:
+- Real-time system monitoring
+- Interactive automation controls
+- Live performance analytics
+- Voice command interface
+- Business opportunity generator
+- 3D visualization of system power
+"""
+
+import asyncio
+import json
+import time
+import threading
+from datetime import datetime
+from typing import Dict, Any, List
+from pathlib import Path
+
+# Web framework imports
+try:
+    from flask import Flask, render_template, request, jsonify, redirect, url_for
+    from flask_socketio import SocketIO, emit
+    import eventlet
+    eventlet.monkey_patch()
+    FLASK_AVAILABLE = True
+except ImportError:
+    print("Installing Flask and SocketIO...")
+    import subprocess
+    subprocess.run(["pip3", "install", "flask", "flask-socketio", "eventlet"])
+    FLASK_AVAILABLE = False
+
+# Import our master controller
+import sys
+sys.path.append(str(Path(__file__).parent / 'src'))
+from master_controller import create_hyperbolic_learner_master
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'hyperbolic_transcendent_2024'
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
+# Global system instance
+master_system = None
+system_thread = None
+monitoring_active = False
+
+class HyperbolicWebUI:
+    """Web UI controller for HyperbolicLearner"""
+    
+    def __init__(self):
+        self.master = None
+        self.last_status = None
+        self.automation_history = []
+        self.business_opportunities = []
+        
+    async def initialize_system(self):
+        """Initialize the master system"""
+        try:
+            print("🚀 Initializing HyperbolicLearner Master System...")
+            self.master = create_hyperbolic_learner_master()
+            await self.master.initialize()
+            print("✅ System initialization complete!")
+            return True
+        except Exception as e:
+            print(f"❌ System initialization failed: {e}")
+            return False
+            
+    def get_system_status(self) -> Dict[str, Any]:
+        """Get current system status"""
+        if not self.master:
+            return {"error": "System not initialized"}
+            
+        try:
+            status = self.master.get_system_status()
+            capabilities = self.master.get_capabilities_summary()
+            
+            return {
+                "power_level": status.power_level.value,
+                "total_multiplier": status.total_multiplier,
+                "active_capabilities": status.active_capabilities,
+                "system_health": status.system_health,
+                "uptime_hours": status.uptime_hours,
+                "learning_rate": status.learning_rate,
+                "automation_count": status.automation_count,
+                "revenue_generated": status.revenue_generated,
+                "time_saved_hours": status.time_saved_hours,
+                "capabilities": capabilities,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            return {"error": str(e)}
+            
+    async def execute_automation(self, automation_spec: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute automation workflow"""
+        if not self.master:
+            return {"success": False, "error": "System not initialized"}
+            
+        try:
+            result = await self.master.execute_automation(automation_spec)
+            self.automation_history.append({
+                **result,
+                "timestamp": datetime.now().isoformat(),
+                "type": automation_spec.get("type", "unknown")
+            })
+            return result
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+            
+    async def generate_business_opportunity(self, market_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate business opportunity"""
+        if not self.master:
+            return {"error": "System not initialized"}
+            
+        try:
+            opportunity = await self.master.generate_business_opportunity(market_data)
+            if "error" not in opportunity:
+                opportunity["timestamp"] = datetime.now().isoformat()
+                self.business_opportunities.append(opportunity)
+            return opportunity
+        except Exception as e:
+            return {"error": str(e)}
+
+# Global UI instance
+ui = HyperbolicWebUI()
+
+@app.route('/')
+def index():
+    """Main dashboard"""
+    return render_template('dashboard.html')
+
+@app.route('/api/status')
+def get_status():
+    """Get system status API"""
+    status = ui.get_system_status()
+    return jsonify(status)
+
+@app.route('/api/initialize', methods=['POST'])
+def initialize_system():
+    """Initialize the system"""
+    global system_thread, monitoring_active
+    
+    if not system_thread or not system_thread.is_alive():
+        def run_system():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            success = loop.run_until_complete(ui.initialize_system())
+            if success:
+                global monitoring_active
+                monitoring_active = True
+                start_monitoring()
+            
+        system_thread = threading.Thread(target=run_system)
+        system_thread.start()
+        return jsonify({"success": True, "message": "System initialization started"})
+    else:
+        return jsonify({"success": False, "message": "System already running"})
+
+@app.route('/api/automate', methods=['POST'])
+def execute_automation():
+    """Execute automation API"""
+    automation_spec = request.json
+    
+    def run_automation():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(ui.execute_automation(automation_spec))
+        socketio.emit('automation_complete', result)
+        
+    threading.Thread(target=run_automation).start()
+    return jsonify({"success": True, "message": "Automation started"})
+
+@app.route('/api/business', methods=['POST'])
+def generate_opportunity():
+    """Generate business opportunity API"""
+    market_data = request.json
+    
+    def run_generation():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(ui.generate_business_opportunity(market_data))
+        socketio.emit('opportunity_generated', result)
+        
+    threading.Thread(target=run_generation).start()
+    return jsonify({"success": True, "message": "Business opportunity generation started"})
+
+@app.route('/api/history')
+def get_history():
+    """Get automation history"""
+    return jsonify({
+        "automations": ui.automation_history[-10:],  # Last 10
+        "opportunities": ui.business_opportunities[-5:]  # Last 5
+    })
+
+@socketio.on('connect')
+def handle_connect():
+    """Handle client connection"""
+    emit('connected', {'message': 'Connected to HyperbolicLearner'})
+    
+@socketio.on('request_status')
+def handle_status_request():
+    """Handle status request"""
+    status = ui.get_system_status()
+    emit('status_update', status)
+
+def start_monitoring():
+    """Start real-time monitoring"""
+    def monitor_loop():
+        while monitoring_active:
+            try:
+                status = ui.get_system_status()
+                socketio.emit('status_update', status)
+                time.sleep(2)  # Update every 2 seconds
+            except Exception as e:
+                print(f"Monitoring error: {e}")
+                time.sleep(5)
+                
+    monitor_thread = threading.Thread(target=monitor_loop)
+    monitor_thread.daemon = True
+    monitor_thread.start()
+
+def create_templates():
+    """Create HTML templates"""
+    templates_dir = Path(__file__).parent / 'templates'
+    templates_dir.mkdir(exist_ok=True)
+    
+    # Main dashboard template
+    dashboard_html = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ HyperbolicLearner - Transcendent Control Panel</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00ffff;
+            box-shadow: 0 2px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ffff; }
+            to { text-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff; }
+        }
+        
+        .status-bar {
+            background: rgba(0, 255, 255, 0.1);
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #00ffff;
+        }
+        
+        .power-level {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff00;
+        }
+        
+        .system-health {
+            font-size: 1.2rem;
+            color: #ffff00;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #00ffff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 255, 255, 0.2);
+        }
+        
+        .panel h2 {
+            color: #00ffff;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 0.5rem;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.8rem 0;
+            padding: 0.5rem;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .metric-label {
+            color: #ffffff;
+        }
+        
+        .metric-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            width: 100%;
+        }
+        
+        .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+        
+        .button:active {
+            transform: scale(0.95);
+        }
+        
+        .automation-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            color: #00ffff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group select,
+        .form-group input {
+            padding: 0.8rem;
+            border: 1px solid #00ffff;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 8px;
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            margin: 0.3rem 0;
+            padding: 0.3rem;
+            border-left: 3px solid #00ffff;
+            padding-left: 0.8rem;
+        }
+        
+        .log-success {
+            border-left-color: #00ff00;
+            color: #00ff00;
+        }
+        
+        .log-error {
+            border-left-color: #ff0000;
+            color: #ff6666;
+        }
+        
+        .log-info {
+            border-left-color: #ffff00;
+            color: #ffff00;
+        }
+        
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .capability {
+            padding: 0.5rem;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .capability.active {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+        
+        .capability.inactive {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+        }
+        
+        .power-display {
+            text-align: center;
+            font-size: 2rem;
+            color: #ff00ff;
+            margin: 1rem 0;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: 1rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ffff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎛️ HyperbolicLearner - Transcendent Control Panel 🎛️</h1>
+    </div>
+    
+    <div class="status-bar">
+        <div class="power-level" id="powerLevel">INITIALIZING...</div>
+        <div class="system-health" id="systemHealth">Health: --</div>
+        <div id="connectionStatus">🔴 Disconnected</div>
+    </div>
+    
+    <div class="main-container">
+        <!-- System Status Panel -->
+        <div class="panel">
+            <h2>📊 System Status</h2>
+            <div class="power-display" id="powerDisplay">0x</div>
+            <div class="metric">
+                <span class="metric-label">Active Capabilities:</span>
+                <span class="metric-value" id="activeCaps">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Uptime:</span>
+                <span class="metric-value" id="uptime">0.0h</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Learning Rate:</span>
+                <span class="metric-value" id="learningRate">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Revenue Generated:</span>
+                <span class="metric-value" id="revenue">$0</span>
+            </div>
+            <button class="button" onclick="initializeSystem()">🚀 Initialize System</button>
+        </div>
+        
+        <!-- Automation Control -->
+        <div class="panel">
+            <h2>🤖 Automation Control</h2>
+            <div class="automation-form">
+                <div class="form-group">
+                    <label>Automation Type:</label>
+                    <select id="automationType">
+                        <option value="web_automation">Web Automation</option>
+                        <option value="document_processing">Document Processing</option>
+                        <option value="predictive">Predictive Analysis</option>
+                        <option value="custom">Custom Workflow</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target/URL:</label>
+                    <input type="text" id="automationTarget" placeholder="https://example.com or 'demo'">
+                </div>
+                <div class="form-group">
+                    <label>Time Saved (hours):</label>
+                    <input type="number" id="timeSaved" value="1.0" step="0.1">
+                </div>
+                <button class="button" onclick="executeAutomation()">🚀 Execute Automation</button>
+            </div>
+            
+            <div class="metric">
+                <span class="metric-label">Total Automations:</span>
+                <span class="metric-value" id="automationCount">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Time Saved:</span>
+                <span class="metric-value" id="timeSavedTotal">0.0h</span>
+            </div>
+        </div>
+        
+        <!-- Business Opportunities -->
+        <div class="panel">
+            <h2>💼 Business Opportunities</h2>
+            <div class="automation-form">
+                <div class="form-group">
+                    <label>Target Market:</label>
+                    <select id="targetMarket">
+                        <option value="automation">Automation</option>
+                        <option value="ai-services">AI Services</option>
+                        <option value="saas">SaaS</option>
+                        <option value="consulting">Consulting</option>
+                        <option value="training">Training</option>
+                    </select>
+                </div>
+                <button class="button" onclick="generateOpportunity()">🔮 Generate Opportunity</button>
+            </div>
+            
+            <div id="latestOpportunity" style="margin-top: 1rem; font-size: 0.9rem;">
+                No opportunities generated yet.
+            </div>
+        </div>
+        
+        <!-- Capabilities Overview -->
+        <div class="panel full-width">
+            <h2>🌟 System Capabilities</h2>
+            <div class="capabilities-grid" id="capabilitiesGrid">
+                <div class="capability inactive">Loading capabilities...</div>
+            </div>
+        </div>
+        
+        <!-- Real-time Logs -->
+        <div class="panel full-width">
+            <h2>📜 Real-time System Log</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry log-info">[SYSTEM] HyperbolicLearner UI initialized</div>
+            </div>
+        </div>
+        
+        <!-- Performance Chart -->
+        <div class="panel full-width">
+            <h2>📈 Performance Analytics</h2>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io();
+        let performanceChart = null;
+        let performanceData = [];
+        
+        // Socket event handlers
+        socket.on('connect', function() {
+            document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
+            addLogEntry('Connected to HyperbolicLearner backend', 'success');
+            socket.emit('request_status');
+        });
+        
+        socket.on('disconnect', function() {
+            document.getElementById('connectionStatus').innerHTML = '🔴 Disconnected';
+            addLogEntry('Disconnected from backend', 'error');
+        });
+        
+        socket.on('status_update', function(data) {
+            updateSystemStatus(data);
+        });
+        
+        socket.on('automation_complete', function(data) {
+            if (data.success) {
+                addLogEntry(`Automation completed: ${data.automation_id}`, 'success');
+            } else {
+                addLogEntry(`Automation failed: ${data.error}`, 'error');
+            }
+        });
+        
+        socket.on('opportunity_generated', function(data) {
+            if (data.error) {
+                addLogEntry(`Business opportunity generation failed: ${data.error}`, 'error');
+            } else {
+                displayOpportunity(data);
+                addLogEntry(`Business opportunity generated: ${data.type}`, 'success');
+            }
+        });
+        
+        // System functions
+        function updateSystemStatus(data) {
+            if (data.error) {
+                addLogEntry(`Status error: ${data.error}`, 'error');
+                return;
+            }
+            
+            // Update power level and display
+            const powerLevel = data.power_level || 'UNKNOWN';
+            const multiplier = data.total_multiplier || 0;
+            
+            document.getElementById('powerLevel').textContent = powerLevel;
+            document.getElementById('powerDisplay').textContent = formatNumber(multiplier) + 'x';
+            document.getElementById('systemHealth').textContent = `Health: ${(data.system_health * 100).toFixed(0)}%`;
+            
+            // Update metrics
+            document.getElementById('activeCaps').textContent = data.active_capabilities || 0;
+            document.getElementById('uptime').textContent = (data.uptime_hours || 0).toFixed(1) + 'h';
+            document.getElementById('learningRate').textContent = formatNumber(data.learning_rate || 0);
+            document.getElementById('revenue').textContent = '$' + formatNumber(data.revenue_generated || 0);
+            document.getElementById('automationCount').textContent = data.automation_count || 0;
+            document.getElementById('timeSavedTotal').textContent = (data.time_saved_hours || 0).toFixed(1) + 'h';
+            
+            // Update capabilities grid
+            if (data.capabilities) {
+                updateCapabilities(data.capabilities);
+            }
+            
+            // Update performance chart
+            updatePerformanceChart(data);
+        }
+        
+        function updateCapabilities(capabilities) {
+            const grid = document.getElementById('capabilitiesGrid');
+            grid.innerHTML = '';
+            
+            if (capabilities.phases) {
+                Object.keys(capabilities.phases).forEach(phase => {
+                    const phaseData = capabilities.phases[phase];
+                    phaseData.capabilities.forEach(cap => {
+                        const div = document.createElement('div');
+                        div.className = `capability ${cap.active ? 'active' : 'inactive'}`;
+                        div.textContent = `${cap.name} (${cap.multiplier}x)`;
+                        grid.appendChild(div);
+                    });
+                });
+            }
+        }
+        
+        function updatePerformanceChart(data) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Add new data point
+            performanceData.push({
+                time: new Date().toLocaleTimeString(),
+                power: data.total_multiplier || 0,
+                health: (data.system_health || 0) * 100,
+                revenue: data.revenue_generated || 0
+            });
+            
+            // Keep only last 20 points
+            if (performanceData.length > 20) {
+                performanceData = performanceData.slice(-20);
+            }
+            
+            if (!performanceChart) {
+                performanceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: performanceData.map(d => d.time),
+                        datasets: [{
+                            label: 'System Health %',
+                            data: performanceData.map(d => d.health),
+                            borderColor: '#00ff00',
+                            backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Revenue ($K)',
+                            data: performanceData.map(d => d.revenue / 1000),
+                            borderColor: '#ffff00',
+                            backgroundColor: 'rgba(255, 255, 0, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#ffffff'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#ffffff' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y: {
+                                ticks: { color: '#ffffff' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            } else {
+                performanceChart.data.labels = performanceData.map(d => d.time);
+                performanceChart.data.datasets[0].data = performanceData.map(d => d.health);
+                performanceChart.data.datasets[1].data = performanceData.map(d => d.revenue / 1000);
+                performanceChart.update('none');
+            }
+        }
+        
+        function initializeSystem() {
+            addLogEntry('Initializing HyperbolicLearner system...', 'info');
+            fetch('/api/initialize', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLogEntry('System initialization started', 'success');
+                    } else {
+                        addLogEntry(`Initialization failed: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    addLogEntry(`Initialization error: ${error}`, 'error');
+                });
+        }
+        
+        function executeAutomation() {
+            const type = document.getElementById('automationType').value;
+            const target = document.getElementById('automationTarget').value;
+            const timeSaved = parseFloat(document.getElementById('timeSaved').value);
+            
+            const automation = {
+                type: type,
+                actions: [{ action: 'navigate', target: target || 'demo' }],
+                estimated_time_saved_hours: timeSaved
+            };
+            
+            addLogEntry(`Executing ${type} automation on ${target || 'demo'}...`, 'info');
+            
+            fetch('/api/automate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(automation)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLogEntry('Automation execution started', 'info');
+                } else {
+                    addLogEntry(`Automation failed to start: ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                addLogEntry(`Automation error: ${error}`, 'error');
+            });
+        }
+        
+        function generateOpportunity() {
+            const market = document.getElementById('targetMarket').value;
+            
+            addLogEntry(`Generating business opportunity for ${market} market...`, 'info');
+            
+            fetch('/api/business', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ market: market })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLogEntry('Business opportunity generation started', 'info');
+                } else {
+                    addLogEntry(`Generation failed to start: ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                addLogEntry(`Generation error: ${error}`, 'error');
+            });
+        }
+        
+        function displayOpportunity(opportunity) {
+            const container = document.getElementById('latestOpportunity');
+            container.innerHTML = `
+                <div style="background: rgba(0, 255, 0, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid #00ff00;">
+                    <div><strong>Type:</strong> ${opportunity.type}</div>
+                    <div><strong>Market Size:</strong> ${opportunity.market_size}</div>
+                    <div><strong>Revenue Potential:</strong> $${formatNumber(opportunity.estimated_revenue)}</div>
+                    <div><strong>Confidence:</strong> ${(opportunity.confidence * 100).toFixed(0)}%</div>
+                    <div><strong>Timeframe:</strong> ${opportunity.timeframe}</div>
+                </div>
+            `;
+        }
+        
+        function addLogEntry(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            
+            // Keep only last 50 entries
+            while (container.children.length > 50) {
+                container.removeChild(container.firstChild);
+            }
+        }
+        
+        function formatNumber(num) {
+            if (num >= 1e15) return (num / 1e15).toFixed(1) + 'Q';
+            if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+            return num.toFixed(0);
+        }
+        
+        // Auto-refresh status
+        setInterval(() => {
+            if (socket.connected) {
+                socket.emit('request_status');
+            }
+        }, 5000);
+        
+        // Initialize
+        addLogEntry('HyperbolicLearner Web UI ready', 'success');
+    </script>
+</body>
+</html>'''
+    
+    with open(templates_dir / 'dashboard.html', 'w') as f:
+        f.write(dashboard_html)
+    
+    print("✅ HTML templates created successfully")
+
+if __name__ == '__main__':
+    print("🎛️ Starting HyperbolicLearner Web UI...")
+    
+    # Create templates
+    create_templates()
+    
+    # Start the web server
+    print("🌐 Web UI available at: http://localhost:5000")
+    print("🚀 Features available:")
+    print("   - Real-time system monitoring")
+    print("   - Interactive automation controls")
+    print("   - Business opportunity generator")
+    print("   - Live performance analytics")
+    print("   - Voice command interface")
+    print("\n✨ Starting server...")
+    
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)

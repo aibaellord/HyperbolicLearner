@@ -57,11 +57,22 @@ import numpy as np
 from scipy import signal as sig_processing
 import matplotlib.pyplot as plt
 from pytube import YouTube, Search, Channel, Playlist, extract
-from moviepy.editor import VideoFileClip, CompositeVideoClip, concatenate_videoclips, TextClip, ImageClip
-from moviepy.video.fx import all as vfx
-import speech_recognition as sr
-from pydub import AudioSegment
-from pydub.silence import split_on_silence, detect_nonsilent
+
+# Optional moviepy import
+try:
+    from moviepy.editor import VideoFileClip, CompositeVideoClip, concatenate_videoclips, TextClip, ImageClip
+    from moviepy.video.fx import all as vfx
+    HAS_MOVIEPY = True
+except ImportError:
+    HAS_MOVIEPY = False
+# Optional audio processing imports
+try:
+    import speech_recognition as sr
+    from pydub import AudioSegment
+    from pydub.silence import split_on_silence, detect_nonsilent
+    HAS_AUDIO = True
+except ImportError:
+    HAS_AUDIO = False
 import torch
 import torch.nn as nn
 import torch.optim as optim

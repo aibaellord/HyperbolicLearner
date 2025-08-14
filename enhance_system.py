@@ -16,8 +16,8 @@ from enum import Enum
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent / 'src'))
 
-from src.core.config_manager import ConfigManager
-from src.core.logger import setup_logger
+from core.config_manager import ConfigManager
+from core.logger import setup_logger
 
 class EnhancementPhase(Enum):
     INTELLIGENCE_AMPLIFICATION = "intelligence_amplification"

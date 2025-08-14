@@ -7,12 +7,12 @@ from pathlib import Path
 import pytest
 import torch
 
-from src.video_processor.semantic_compression.importance_models import (
+from video_processor.semantic_compression.importance_models import (
     VisualImportanceModel, 
     AudioImportanceModel, 
     TranscriptImportanceModel
 )
-from src.video_processor.semantic_compression.multimodal_fusion import MultimodalFusion
+from video_processor.semantic_compression.multimodal_fusion import MultimodalFusion
 from src.video_processor.semantic_compression.semantic_compressor import SemanticCompressor
 
 

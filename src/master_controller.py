@@ -554,6 +554,13 @@ class HyperbolicLearnerMaster:
         if self.optimization_thread:
             self.optimization_thread.join(timeout=5)
             
+        # Cleanup shared browser instances first
+        try:
+            from automation.universal_controller import WebInterfaceController
+            WebInterfaceController.cleanup_shared_driver()
+        except Exception as e:
+            self.logger.warning(f"Browser cleanup error: {e}")
+            
         # Shutdown all modules
         for module_key, module in self.active_modules.items():
             try:

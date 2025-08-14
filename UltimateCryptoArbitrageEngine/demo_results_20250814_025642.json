@@ -1,0 +1,116 @@
+{
+  "start_time": "2025-08-14T02:56:28.627031",
+  "opportunities_found": 3,
+  "profitable_opportunities": 3,
+  "estimated_profits": 305.4408982869663,
+  "exchange_data": {
+    "connected": [
+      "binance",
+      "coinbase",
+      "kraken",
+      "bitfinex",
+      "huobi",
+      "gate",
+      "kucoin",
+      "okx",
+      "bybit",
+      "bitget",
+      "bingx",
+      "lbank",
+      "probit",
+      "coinex",
+      "ascendex",
+      "bitrue",
+      "phemex",
+      "exmo",
+      "hitbtc",
+      "cex",
+      "coincheck"
+    ],
+    "failed": [
+      "mexc",
+      "whitebit",
+      "bitmart",
+      "xt"
+    ],
+    "success_rate": 0.84
+  },
+  "risk_analysis": {
+    "reliable_exchanges": 0,
+    "risky_exchanges": 25,
+    "max_risk_amount": 300.0,
+    "recommended_trade_size": 30.0
+  },
+  "price_data": {
+    "BTC/USDT": {
+      "binance": {
+        "bid": 44743.19266698145,
+        "ask": 44787.958242436165,
+        "last": 44765.57545470881,
+        "volume": 389.6020706361599,
+        "timestamp": 1755132991.1591082
+      },
+      "coinbase": {
+        "bid": 45071.586855725785,
+        "ask": 45116.68098964847,
+        "last": 45094.13392268713,
+        "volume": 605.4083383091186,
+        "timestamp": 1755132991.1591392
+      },
+      "kraken": {
+        "bid": 45075.774615806586,
+        "ask": 45120.87293958428,
+        "last": 45098.323777695434,
+        "volume": 134.00290814077192,
+        "timestamp": 1755132991.1591492
+      }
+    },
+    "ETH/USDT": {
+      "binance": {
+        "bid": 3006.8407466839753,
+        "ask": 3009.8490916031187,
+        "last": 3008.344919143547,
+        "volume": 721.4037811987945,
+        "timestamp": 1755132991.1592162
+      },
+      "coinbase": {
+        "bid": 3012.808442655552,
+        "ask": 3015.822758256008,
+        "last": 3014.31560045578,
+        "volume": 645.8355253713099,
+        "timestamp": 1755132991.1592262
+      },
+      "kraken": {
+        "bid": 2993.805906315211,
+        "ask": 2996.8012098733047,
+        "last": 2995.303558094258,
+        "volume": 274.4240409451867,
+        "timestamp": 1755132991.159234
+      }
+    },
+    "BNB/USDT": {
+      "binance": {
+        "bid": 297.99195356491543,
+        "ask": 298.29009458899236,
+        "last": 298.1410240769539,
+        "volume": 277.29975365948746,
+        "timestamp": 1755132991.1592681
+      },
+      "coinbase": {
+        "bid": 299.6312163191058,
+        "ask": 299.9309974259783,
+        "last": 299.78110687254207,
+        "volume": 272.6775087543188,
+        "timestamp": 1755132991.159282
+      },
+      "kraken": {
+        "bid": 299.9073867232909,
+        "ask": 300.2074441387219,
+        "last": 300.0574154310064,
+        "volume": 744.5568467169121,
+        "timestamp": 1755132991.1592908
+      }
+    }
+  },
+  "end_time": "2025-08-14T02:56:42.428621"
+}

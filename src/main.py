@@ -758,7 +758,7 @@ def main():
     if args.command == "creative-ai":
         print("Launching Creative AI Suggestions dashboard...")
         launch_creative_ai_dashboard()
-        from src.ui.web_interface import app as flask_app
+    from ui.web_interface import app as flask_app
         flask_app.run(debug=True, port=5000)
         sys.exit(0)
     if args.command == "learn":

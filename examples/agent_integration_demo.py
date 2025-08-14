@@ -74,8 +74,8 @@ logger = logging.getLogger("AgentDemo")
 # Try importing the HyperbolicLearner components
 try:
     from src import HyperbolicLearner
-    from src.agents import RealtimeAgent
-    from src.core.config import SystemConfig
+    from agents import RealtimeAgent
+    from core.config import SystemConfig
     from src.ml_engine.content_analyzer import ContentImportance, ContentAnalyzer
     from src.knowledge_base.graph_db import KnowledgeNode, Relationship, KnowledgeGraph
     from src.video_processor.accelerator import VideoAccelerator
